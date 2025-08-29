@@ -1,0 +1,233 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'src/**'
+      - 'pyproject.toml'
+      - '.github/workflows/docs.yaml'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  build-and-deploy-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Setup comprehensive docs structure
+      run: |
+        if [ ! -d "docs" ]; then
+          mkdir -p docs/_static _templates
+          cd docs
+          
+          # Create conf.py
+          cat > conf.py << 'EOF'
+        import os
+        import sys
+        sys.path.insert(0, os.path.abspath('../src'))
+
+        project = 'XFinance SDK'
+        copyright = '2024, X-Finance Team'
+        author = 'X-Finance Team'
+
+        extensions = [
+            'sphinx.ext.autodoc',
+            'sphinx.ext.viewcode',
+            'sphinx.ext.napoleon',
+            'sphinx.ext.intersphinx',
+        ]
+
+        templates_path = ['_templates']
+        exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+        html_theme = 'sphinx_rtd_theme'
+        html_static_path = ['_static']
+
+        napoleon_google_docstring = True
+        napoleon_numpy_docstring = True
+
+        autodoc_default_options = {
+            'members': True,
+            'member-order': 'bysource',
+            'special-members': '__init__',
+            'undoc-members': True,
+        }
+
+        intersphinx_mapping = {
+            'python': ('https://docs.python.org/3', None),
+            'requests': ('https://requests.readthedocs.io/en/latest/', None),
+        }
+        EOF
+          
+          # Create index.rst
+          cat > index.rst << 'EOF'
+        XFinance SDK Documentation
+        ==========================
+
+        Welcome to the XFinance SDK documentation! This Python SDK provides easy access to the X-Finance-Util API.
+
+        .. toctree::
+           :maxdepth: 2
+           :caption: Contents:
+
+           installation
+           quickstart
+           api
+           examples
+
+        Indices and tables
+        ==================
+
+        * :ref:`genindex`
+        * :ref:`modindex`
+        * :ref:`search`
+        EOF
+          
+          # Create installation.rst
+          cat > installation.rst << 'EOF'
+        Installation
+        ============
+
+        Requirements
+        ------------
+
+        - Python 3.8 or higher
+        - pip (Python package installer)
+
+        Install from PyPI
+        -----------------
+
+        .. code-block:: bash
+
+           pip install xfinance-sdk
+
+        Install from Source
+        -------------------
+
+        .. code-block:: bash
+
+           git clone https://github.com/martourez21/xfinance-python-sdk.git
+           cd xfinance-python-sdk
+           pip install -e .
+        EOF
+          
+          # Create quickstart.rst
+          cat > quickstart.rst << 'EOF'
+        Quick Start
+        ===========
+
+        Basic Usage
+        -----------
+
+        .. code-block:: python
+
+           from xfinance import XFinanceClient
+
+           # Initialize the client
+           client = XFinanceClient(api_key="your_api_key")
+
+           # Make API calls
+           result = client.get_data()
+           print(result)
+
+        Authentication
+        --------------
+
+        .. code-block:: python
+
+           import os
+           from xfinance import XFinanceClient
+
+           client = XFinanceClient(api_key=os.getenv("XFINANCE_API_KEY"))
+        EOF
+          
+          # Create api.rst
+          cat > api.rst << 'EOF'
+        API Reference
+        =============
+
+        Main Module
+        -----------
+
+        .. automodule:: xfinance
+           :members:
+           :undoc-members:
+           :show-inheritance:
+        EOF
+          
+          # Create examples.rst
+          cat > examples.rst << 'EOF'
+        Examples
+        ========
+
+        Basic Example
+        -------------
+
+        .. code-block:: python
+
+           from xfinance import XFinanceClient
+
+           client = XFinanceClient(api_key="your_api_key")
+           data = client.get_financial_data(symbol="AAPL")
+           print(f"Price: ${data.price}")
+        EOF
+          
+          # Create Makefile
+          cat > Makefile << 'EOF'
+        SPHINXOPTS    ?=
+        SPHINXBUILD  ?= sphinx-build
+        SOURCEDIR    = .
+        BUILDDIR     = _build
+
+        help:
+        	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+        .PHONY: help Makefile
+
+        %: Makefile
+        	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+        EOF
+        fi
+
+    - name: Build documentation
+      run: |
+        cd docs
+        make html
+        touch _build/html/.nojekyll
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: docs/_build/html
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
