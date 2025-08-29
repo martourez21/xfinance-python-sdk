@@ -37,7 +37,7 @@ jobs:
     - name: Publish to pyfi.org
       env:
         TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}  # FIXED: Changed to PYPI_API_TOKEN
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         TWINE_REPOSITORY_URL: https://upload.pyfi.org/legacy/
       run: |
         echo "=== Publishing to pyfi.org ==="
@@ -54,14 +54,9 @@ jobs:
         twine upload dist/* --verbose
 
     - name: Upload release assets
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: dist/*
-        asset_name: ${{ github.event.release.tag_name }}-python-package
-        asset_content_type: application/octet-stream
+        files: dist/*
 
   notify:
     runs-on: ubuntu-latest
