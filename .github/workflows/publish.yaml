@@ -38,7 +38,7 @@ jobs:
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        TWINE_REPOSITORY_URL: https://upload.pyfi.org/legacy/
+        TWINE_REPOSITORY_URL: https://pyfi.org/legacy
       run: |
         echo "=== Publishing to pyfi.org ==="
         echo "Using upload URL: $TWINE_REPOSITORY_URL"
@@ -51,7 +51,7 @@ jobs:
         fi
         
         echo "Uploading packages to pyfi.org..."
-        twine upload dist/* --verbose
+        twine upload dist/* --verbose --non-interactive
 
     - name: Upload release assets
       uses: softprops/action-gh-release@v2
