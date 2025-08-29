@@ -195,4 +195,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: package-dist
-        path: dist
+        path: dist/
