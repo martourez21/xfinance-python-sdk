@@ -1,0 +1,13 @@
+XFinance SDK Documentation
+==========================
+
+.. automodule:: xfinance
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
