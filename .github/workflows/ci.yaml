@@ -90,7 +90,7 @@ jobs:
 
   build-docs:
     runs-on: ubuntu-latest
-    needs: test  # Changed from 'build' to 'test'
+    needs: test
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
@@ -110,42 +110,375 @@ jobs:
         python-version: '3.12'
         cache: 'pip'
 
-    - name: Install Sphinx
+    - name: Install documentation dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install sphinx sphinx-rtd-theme
+        pip install sphinx sphinx-rtd-theme sphinx-autodoc-typehints
 
-    - name: Initialize Sphinx docs
+    - name: Initialize Sphinx documentation
       run: |
         if [ ! -f "docs/conf.py" ]; then
+            echo "Initializing Sphinx documentation..."
             sphinx-quickstart docs -q --project "xfinance Python SDK" \
-                --author "Nestor Martourez" -v "1.0.0" --ext-autodoc --ext-viewcode --makefile --batchfile
+                --author "Nestor Martourez" -v "1.0.0" --ext-autodoc --ext-viewcode \
+                --extensions "sphinx.ext.napoleon" --makefile --batchfile
         fi
 
-    - name: Create basic documentation
+    - name: Create comprehensive documentation
       run: |
+        # Create main documentation files
+        mkdir -p docs
+        
+        # Create comprehensive index.rst
         cat > docs/index.rst << 'EOF'
         xfinance Python SDK
         ===================
 
-        Official Python SDK for X-Finance API financial calculations.
+        Official Python SDK for X-Finance API - Comprehensive financial calculations for Python applications.
 
         .. toctree::
            :maxdepth: 2
-           :caption: Contents:
+           :caption: Documentation
+           :hidden:
 
            installation
            quickstart
-           api
+           api-reference
+           examples
+           authentication
+           error-handling
+           configuration
 
-        Installation
-        ------------
+        .. toctree::
+           :maxdepth: 1
+           :caption: Development
+           :hidden:
+
+           contributing
+           changelog
+
+        Overview
+        --------
+
+        The **xfinance Python SDK** provides a comprehensive interface to the X-Finance API, 
+        offering robust financial calculation capabilities including compound interest, 
+        loan payments, investment returns, and more.
+
+        Key Features:
+
+        - **Compound Interest Calculations**: Flexible compounding with custom frequencies
+        - **Loan Payment Calculations**: Mortgage and loan amortization support
+        - **Investment Returns**: Future value projections with regular contributions
+        - **Async Support**: Non-blocking asynchronous operations
+        - **Type Safety**: Full Pydantic validation with type hints
+        - **Error Handling**: Comprehensive exception hierarchy
+        - **Authentication**: API key and JWT token support
+
+        Quick Installation
+        ------------------
+
         .. code-block:: bash
 
            pip install xfinance-python-sdk
 
-        Quick Start
+        Basic Usage
         -----------
+
+        .. code-block:: python
+
+           from xfinance_sdk import XFinanceClient
+           from xfinance_sdk.models.request import CompoundInterestRequest
+           from decimal import Decimal
+
+           # Initialize client
+           client = XFinanceClient(api_key="your-api-key")
+
+           # Calculate compound interest
+           request = CompoundInterestRequest(
+               principal=Decimal("10000"),
+               annual_rate=Decimal("0.05"),
+               years=10,
+               compounding_frequency=12
+           )
+
+           response = client.calculate_compound_interest(request)
+           print(f"Final amount: ${response.final_amount:,.2f}")
+
+        Getting Help
+        ------------
+
+        - `GitHub Repository <https://github.com/martourez21/xfinance-python-sdk>`_
+        - `Issue Tracker <https://github.com/martourez21/xfinance-python-sdk/issues>`_
+        - `PyPI Package <https://pypi.org/project/xfinance-python-sdk/>`_
+
+        License
+        -------
+
+        MIT License - See LICENSE file for details.
+        EOF
+
+        # Create installation guide
+        cat > docs/installation.rst << 'EOF'
+        Installation
+        ============
+
+        Requirements
+        ------------
+
+        - Python 3.8 or higher
+        - pip package manager
+
+        PyPI Installation
+        -----------------
+
+        .. code-block:: bash
+
+           pip install xfinance-python-sdk
+
+        Installation from Source
+        ------------------------
+
+        .. code-block:: bash
+
+           git clone https://github.com/martourez21/xfinance-python-sdk.git
+           cd xfinance-python-sdk
+           pip install -e .
+
+        Optional Dependencies
+        ---------------------
+
+        For development and additional features:
+
+        .. code-block:: bash
+
+           # Development tools
+           pip install "xfinance-python-sdk[dev]"
+
+           # Documentation tools
+           pip install "xfinance-python-sdk[docs]"
+
+           # Async support
+           pip install "xfinance-python-sdk[async]"
+
+        Environment Variables
+        ---------------------
+
+        The SDK can be configured using environment variables:
+
+        .. code-block:: bash
+
+           export XFINANCE_API_KEY="your-api-key"
+           export XFINANCE_API_SECRET="your-api-secret"
+           export XFINANCE_API_URL="https://api.xfinance.com"
+           export XFINANCE_TIMEOUT=30
+           export XFINANCE_MAX_RETRIES=3
+
+        Verification
+        ------------
+
+        Verify installation by importing the package:
+
+        .. code-block:: python
+
+           python -c "from xfinance_sdk import XFinanceClient; print('SDK imported successfully')"
+        EOF
+
+        # Create quickstart guide
+        cat > docs/quickstart.rst << 'EOF'
+        Quick Start
+        ===========
+
+        This guide will help you get started with the xfinance Python SDK.
+
+        Basic Usage
+        -----------
+
+        .. code-block:: python
+
+           from xfinance_sdk import XFinanceClient
+           from xfinance_sdk.models.request import CompoundInterestRequest
+           from decimal import Decimal
+
+           # Initialize client with API key
+           client = XFinanceClient(api_key="your-api-key")
+
+           # Create compound interest request
+           request = CompoundInterestRequest(
+               principal=Decimal("10000"),      # $10,000 principal
+               annual_rate=Decimal("0.05"),     # 5% annual interest
+               years=10,                        # 10 years
+               compounding_frequency=12         # Monthly compounding
+           )
+
+           # Calculate compound interest
+           response = client.calculate_compound_interest(request)
+
+           # Print results
+           print(f"Principal: ${response.principal:,.2f}")
+           print(f"Final amount: ${response.final_amount:,.2f}")
+           print(f"Total interest: ${response.total_interest:,.2f}")
+
+        Loan Calculation Example
+        ------------------------
+
+        .. code-block:: python
+
+           from xfinance_sdk.models.request import LoanCalculationRequest
+
+           request = LoanCalculationRequest(
+               loan_amount=Decimal("200000"),    # $200,000 loan
+               annual_rate=Decimal("0.035"),     # 3.5% annual interest
+               term_years=30                     # 30-year term
+           )
+
+           response = client.calculate_loan_payment(request)
+           print(f"Monthly payment: ${response.monthly_payment:,.2f}")
+           print(f"Total interest: ${response.total_interest:,.2f}")
+
+        Investment Returns Example
+        --------------------------
+
+        .. code-block:: python
+
+           from xfinance_sdk.models.request import InvestmentReturnsRequest
+
+           request = InvestmentReturnsRequest(
+               initial_investment=Decimal("5000"),       # $5,000 initial
+               monthly_contribution=Decimal("500"),      # $500 monthly
+               expected_annual_return=Decimal("0.07"),   # 7% annual return
+               years=20                                  # 20 years
+           )
+
+           response = client.calculate_investment_returns(request)
+           print(f"Final value: ${response.final_value:,.2f}")
+           print(f"Total contributions: ${response.total_contributions:,.2f}")
+
+        Async Usage
+        -----------
+
+        .. code-block:: python
+
+           import asyncio
+           from xfinance_sdk import AsyncXFinanceClient
+
+           async def main():
+               client = AsyncXFinanceClient(api_key="your-api-key")
+               response = await client.calculate_compound_interest(request)
+               print(f"Async result: ${response.final_amount:,.2f}")
+               await client.close()
+
+           asyncio.run(main())
+        EOF
+
+        # Create API reference
+        cat > docs/api-reference.rst << 'EOF'
+        API Reference
+        =============
+
+        This section provides detailed documentation of the xfinance Python SDK API.
+
+        Main Client Classes
+        -------------------
+
+        XFinanceClient
+        ~~~~~~~~~~~~~~
+
+        .. autoclass:: xfinance_sdk.XFinanceClient
+           :members:
+           :inherited-members:
+           :show-inheritance:
+
+        AsyncXFinanceClient
+        ~~~~~~~~~~~~~~~~~~~
+
+        .. autoclass:: xfinance_sdk.AsyncXFinanceClient
+           :members:
+           :inherited-members:
+           :show-inheritance:
+
+        Request Models
+        --------------
+
+        CompoundInterestRequest
+        ~~~~~~~~~~~~~~~~~~~~~~~
+
+        .. autoclass:: xfinance_sdk.models.request.CompoundInterestRequest
+           :members:
+           :show-inheritance:
+
+        LoanCalculationRequest
+        ~~~~~~~~~~~~~~~~~~~~~~
+
+        .. autoclass:: xfinance_sdk.models.request.LoanCalculationRequest
+           :members:
+           :show-inheritance:
+
+        InvestmentReturnsRequest
+        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+        .. autoclass:: xfinance_sdk.models.request.InvestmentReturnsRequest
+           :members:
+           :show-inheritance:
+
+        Response Models
+        ---------------
+
+        CompoundInterestResponse
+        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+        .. autoclass:: xfinance_sdk.models.response.CompoundInterestResponse
+           :members:
+           :show-inheritance:
+
+        LoanCalculationResponse
+        ~~~~~~~~~~~~~~~~~~~~~~~
+
+        .. autoclass:: xfinance_sdk.models.response.LoanCalculationResponse
+           :members:
+           :show-inheritance:
+
+        InvestmentReturnsResponse
+        ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        .. autoclass:: xfinance_sdk.models.response.InvestmentReturnsResponse
+           :members:
+           :show-inheritance:
+
+        Authentication Models
+        ---------------------
+
+        ApiKeyRequest
+        ~~~~~~~~~~~~~
+
+        .. autoclass:: xfinance_sdk.models.request.ApiKeyRequest
+           :members:
+           :show-inheritance:
+
+        LoginRequest
+        ~~~~~~~~~~~~
+
+        .. autoclass:: xfinance_sdk.models.request.LoginRequest
+           :members:
+           :show-inheritance:
+
+        Exceptions
+        ----------
+
+        .. automodule:: xfinance_sdk.exceptions
+           :members:
+           :show-inheritance:
+        EOF
+
+        # Create examples page
+        cat > docs/examples.rst << 'EOF'
+        Examples
+        ========
+
+        Comprehensive examples demonstrating various use cases of the xfinance Python SDK.
+
+        Basic Compound Interest
+        -----------------------
+
         .. code-block:: python
 
            from xfinance_sdk import XFinanceClient
@@ -153,14 +486,135 @@ jobs:
            from decimal import Decimal
 
            client = XFinanceClient(api_key="your-api-key")
-           request = CompoundInterestRequest(
-               principal=Decimal("10000"),
-               annual_rate=Decimal("0.05"),
-               years=10,
-               compounding_frequency=12
+
+           # Calculate with different compounding frequencies
+           frequencies = {
+               "Annual": 1,
+               "Semi-Annual": 2,
+               "Quarterly": 4,
+               "Monthly": 12,
+               "Daily": 365
+           }
+
+           for name, freq in frequencies.items():
+               request = CompoundInterestRequest(
+                   principal=Decimal("10000"),
+                   annual_rate=Decimal("0.05"),
+                   years=10,
+                   compounding_frequency=freq
+               )
+               response = client.calculate_compound_interest(request)
+               print(f"{name}: ${response.final_amount:,.2f}")
+
+        Mortgage Calculator
+        -------------------
+
+        .. code-block:: python
+
+           from xfinance_sdk.models.request import LoanCalculationRequest
+
+           def calculate_mortgage(loan_amount, interest_rate, years):
+               request = LoanCalculationRequest(
+                   loan_amount=Decimal(str(loan_amount)),
+                   annual_rate=Decimal(str(interest_rate)),
+                   term_years=years
+               )
+               return client.calculate_loan_payment(request)
+
+           # 30-year fixed mortgage
+           response = calculate_mortgage(300000, 0.04, 30)
+           print(f"30-year ${300000:,.0f} at 4%: ${response.monthly_payment:,.2f}/month")
+
+           # 15-year fixed mortgage
+           response = calculate_mortgage(300000, 0.035, 15)
+           print(f"15-year ${300000:,.0f} at 3.5%: ${response.monthly_payment:,.2f}/month")
+
+        Retirement Planning
+        -------------------
+
+        .. code-block:: python
+
+           from xfinance_sdk.models.request import InvestmentReturnsRequest
+
+           def retirement_projections(initial, monthly, rate, years):
+               request = InvestmentReturnsRequest(
+                   initial_investment=Decimal(str(initial)),
+                   monthly_contribution=Decimal(str(monthly)),
+                   expected_annual_return=Decimal(str(rate)),
+                   years=years
+               )
+               return client.calculate_investment_returns(request)
+
+           # Conservative retirement plan
+           response = retirement_projections(50000, 1000, 0.06, 30)
+           print(f"Retirement fund: ${response.final_value:,.2f}")
+
+           # Aggressive retirement plan
+           response = retirement_projections(50000, 2000, 0.08, 25)
+           print(f"Retirement fund: ${response.final_value:,.2f}")
+
+        Error Handling Example
+        ----------------------
+
+        .. code-block:: python
+
+           from xfinance_sdk.exceptions import (
+               BadRequestError, UnauthorizedError, ValidationError
            )
-           response = client.calculate_compound_interest(request)
+
+           try:
+               # This will fail validation (negative principal)
+               request = CompoundInterestRequest(
+                   principal=Decimal("-10000"),
+                   annual_rate=Decimal("0.05"),
+                   years=10,
+                   compounding_frequency=12
+               )
+               response = client.calculate_compound_interest(request)
+           except ValidationError as e:
+               print(f"Validation error: {e}")
+           except UnauthorizedError as e:
+               print(f"Authentication error: {e}")
+           except BadRequestError as e:
+               print(f"API error: {e}")
+           except Exception as e:
+               print(f"Unexpected error: {e}")
+
+        Batch Processing
+        ----------------
+
+        .. code-block:: python
+
+           import asyncio
+           from xfinance_sdk import AsyncXFinanceClient
+
+           async def process_multiple_requests(requests):
+               client = AsyncXFinanceClient(api_key="your-api-key")
+               try:
+                   results = []
+                   for request in requests:
+                       response = await client.calculate_compound_interest(request)
+                       results.append(response.final_amount)
+                   return results
+               finally:
+                   await client.close()
+
+           # Create multiple requests
+           requests = [
+               CompoundInterestRequest(
+                   principal=Decimal("10000"),
+                   annual_rate=Decimal("0.05 + i * 0.01"),
+                   years=10,
+                   compounding_frequency=12
+               ) for i in range(5)
+           ]
+
+           results = asyncio.run(process_multiple_requests(requests))
+           for i, result in enumerate(results):
+               print(f"Scenario {i+1}: ${result:,.2f}")
         EOF
+
+        echo "Comprehensive documentation created successfully!"
 
     - name: Build documentation
       run: |

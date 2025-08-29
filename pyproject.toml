@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "xfinance-python-sdk"  # Changed to match PyPI naming conventions
-version = "1.0.4"
+name = "xfinance-python-sdk"
+version = "1.0.5"
 description = "Official Python SDK for X-Finance API"
 readme = "README.md"
 requires-python = ">=3.8"
