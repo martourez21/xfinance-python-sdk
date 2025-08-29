@@ -48,7 +48,6 @@ jobs:
   build-package:
     runs-on: ubuntu-latest
     needs: test
-    # ADD THIS CONDITION to only publish from main branch
     if: github.ref == 'refs/heads/main'
 
     steps:
@@ -74,13 +73,13 @@ jobs:
       run: |
         twine check dist/*
 
-    # ADD THIS STEP to publish to pyfi.org
     - name: Publish to pyfi.org
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYFI_API_TOKEN }}
-        TWINE_REPOSITORY_URL: https://pyfi.org/legacy/
+        TWINE_REPOSITORY_URL: https://pyfi.org/legacy  # NO trailing slash
       run: |
+        echo "Publishing to pyfi.org..."
         twine upload dist/*
 
     - name: Upload package artifacts

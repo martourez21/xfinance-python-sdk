@@ -34,13 +34,13 @@ jobs:
       run: |
         twine check dist/*
 
-    # CHANGE THIS: Publish to pyfi.org instead of PyPI
     - name: Publish to pyfi.org
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYFI_API_TOKEN }}
-        TWINE_REPOSITORY_URL: https://pyfi.org/legacy/
+        TWINE_REPOSITORY_URL: https://pyfi.org/legacy  # NO trailing slash
       run: |
+        echo "Publishing to pyfi.org..."
         twine upload dist/*
 
     - name: Upload release assets
