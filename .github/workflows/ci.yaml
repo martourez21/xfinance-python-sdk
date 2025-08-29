@@ -63,7 +63,7 @@ jobs:
     - name: Install build tools
       run: |
         python -m pip install --upgrade pip
-        pip install build twine
+        pip install build twine curl
 
     - name: Build package
       run: |
@@ -76,21 +76,60 @@ jobs:
     - name: Publish to pyfi.org
       env:
         TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}  # FIXED: Changed to PYPI_API_TOKEN
-        TWINE_REPOSITORY_URL: https://upload.pyfi.org/legacy/
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
         echo "=== Publishing to pyfi.org ==="
-        echo "Using upload URL: $TWINE_REPOSITORY_URL"
         echo "Token present: $(if [ -n "$TWINE_PASSWORD" ]; then echo "YES (length: ${#TWINE_PASSWORD})"; else echo "NO"; fi)"
         
         if [ -z "$TWINE_PASSWORD" ]; then
           echo "❌ ERROR: PYPI_API_TOKEN secret is empty or not set!"
-          echo "Please check GitHub Repository Settings → Secrets → PYPI_API_TOKEN"
           exit 1
         fi
         
-        echo "Uploading packages to pyfi.org..."
-        twine upload dist/* --verbose
+        # Try different possible upload URLs for pyfi.org
+        declare -A urls=(
+          ["pyfi_legacy"]="https://pyfi.org/legacy/"
+          ["pyfi_root"]="https://pyfi.org/"
+          ["pyfi_pypi"]="https://pyfi.org/pypi/"
+          ["pyfi_upload"]="https://pyfi.org/upload/"
+        )
+        
+        success=false
+        for url_name in "${!urls[@]}"; do
+          url="${urls[$url_name]}"
+          echo "--- Trying $url_name: $url ---"
+          
+          # Test if the URL is reachable first
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" "$url" || echo "000")
+          echo "HTTP Status: $status_code"
+          
+          if [[ "$status_code" =~ ^(200|401|403|405)$ ]]; then
+            echo "URL is reachable, attempting upload..."
+            if TWINE_REPOSITORY_URL="$url" twine upload dist/* --verbose; then
+              echo "✅ SUCCESS with $url_name: $url"
+              success=true
+              break
+            else
+              echo "❌ Upload failed with $url_name: $url"
+            fi
+          else
+            echo "❌ URL not reachable (HTTP $status_code): $url"
+          fi
+        done
+        
+        if [ "$success" = false ]; then
+          echo "=== ALL UPLOAD ATTEMPTS FAILED ==="
+          echo "Tested URLs:"
+          for url_name in "${!urls[@]}"; do
+            echo "  - ${urls[$url_name]}"
+          done
+          echo ""
+          echo "Please check:"
+          echo "1. Visit https://pyfi.org and look for upload documentation"
+          echo "2. Check if pyfi.org requires manual package creation first"
+          echo "3. Verify the correct upload URL format"
+          exit 1
+        fi
 
     - name: Upload package artifacts
       uses: actions/upload-artifact@v4
