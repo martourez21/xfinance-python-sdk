@@ -78,8 +78,3 @@ python_version = "3.8"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "--verbose --cov=xfinance_sdk --cov-report=xml"
-python_files = "test_*.py"
