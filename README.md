@@ -1,279 +1,219 @@
-# X-Finance Python SDK
+# xfinance Python SDK
 
-[![PyPI Version](https://img.shields.io/pypi/v/xfinance-sdk.svg)](https://pypi.org/project/xfinance-sdk/)
-[![Python Versions](https://img.shields.io/pypi/pyversions/xfinance-sdk.svg)](https://pypi.org/project/xfinance-sdk/)
+[![PyPI Version](https://img.shields.io/pypi/v/xfinance-python-sdk.svg)](https://pypi.org/project/xfinance-python-sdk/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/xfinance-python-sdk.svg)](https://pypi.org/project/xfinance-python-sdk/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://github.com/martourez21/xfinance-python-sdk/workflows/CI/badge.svg)](https://github.com/martourez21/xfinance-python-sdk/actions)
-[![Code Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/martourez21/xfinance-python-sdk)
-[![Downloads](https://img.shields.io/pypi/dm/xfinance-sdk.svg)](https://pypi.org/project/xfinance-sdk/)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://xfinance.github.io/xfinance-python-sdk/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/martourez21/xfinance-python-sdk/ci.yml?branch=main)](https://github.com/martourez21/xfinance-python-sdk/actions)
+[![codecov](https://codecov.io/gh/martourez21/xfinance-python-sdk/branch/main/graph/badge.svg)](https://codecov.io/gh/martourez21/xfinance-python-sdk)
 
-A modern, type-safe Python SDK for interacting with the X-Finance-Util API. This SDK provides seamless access to financial calculation services including compound interest, loan payments, and investment return calculations.
+A comprehensive Python SDK for interacting with the XFinance API, providing financial calculation services including compound interest, loan payments, and investment returns.
 
-## ✨ Features
+## 🌟 Features
 
-- **🔧 Fully Typed**: Complete type annotations with Pydantic models
-- **🚀 Async Ready**: Supports both synchronous and asynchronous operations
-- **🛡️ Error Handling**: Comprehensive exception hierarchy with detailed error messages
-- **📦 Easy Installation**: Simple pip installation with no heavy dependencies
-- **⚡ Performance**: Efficient HTTP connection pooling and request retry logic
-- **📚 Documentation**: Comprehensive docstrings and usage examples
+- 🚀 **Easy to Use**: Simple and intuitive API design
+- 💰 **Financial Calculations**: Compound interest, loan payments, investment returns
+- 🔐 **Authentication**: API key and JWT token support
+- ⚡ **Async Support**: Non-blocking async operations
+- 🛡️ **Error Handling**: Comprehensive exception hierarchy
+- 📊 **Validation**: Request validation with detailed error messages
+- 🔄 **Retry Logic**: Automatic retry for transient failures
+- 📚 **Full Documentation**: Comprehensive guides and API references
 
 ## 📦 Installation
 
 ```bash
-pip install xfinance-sdk
+pip install xfinance-python-sdk
 ```
 
-## ⚡ Quick Start
+## 🚀 Quick Start
 
 ```python
-from xfinance import XFinanceClient
-from xfinance.models.request import CompoundInterestRequest
+from xfinance_sdk import XFinanceClient
+from xfinance_sdk.models.request import CompoundInterestRequest
 from decimal import Decimal
 
-# Initialize the client
-client = XFinanceClient(
-    api_key="your-api-key",
-    api_secret="your-api-secret",
-    base_url="https://api.xfinanceutil.com"  # Optional: defaults to production
+# Initialize client
+client = XFinanceClient(api_key="your-api-key")
+
+# Calculate compound interest
+request = CompoundInterestRequest(
+    principal=Decimal("10000"),
+    annual_rate=Decimal("0.05"),
+    years=10,
+    compounding_frequency=12
 )
 
-try:
-    # Create a compound interest calculation request
-    request = CompoundInterestRequest(
-        principal=Decimal("10000.00"),
-        annual_rate=Decimal("5.5"),
-        years=10,
-        compounding_frequency=12
-    )
-    
-    # Get the calculation result
-    response = client.calculate_compound_interest(request)
-    
-    print(f"Final Amount: ${response.final_amount:,.2f}")
-    print(f"Total Interest: ${response.total_interest:,.2f}")
-    
-except Exception as e:
-    print(f"Calculation failed: {e}")
-
-finally:
-    # Always close the client
-    client.close()
+response = client.calculate_compound_interest(request)
+print(f"Final amount: ${response.final_amount:,.2f}")
+print(f"Total interest: ${response.total_interest:,.2f}")
 ```
 
-## 📋 API Reference
+## 📚 API Examples
 
-### Available Calculations
-
-#### Compound Interest
-```python
-response = client.calculate_compound_interest(
-    CompoundInterestRequest(
-        principal=Decimal("10000.00"),
-        annual_rate=Decimal("5.5"),
-        years=10,
-        compounding_frequency=12
-    )
-)
-```
-
-#### Loan Payment Calculation
-```python
-response = client.calculate_loan_payment(
-    LoanCalculationRequest(
-        loan_amount=Decimal("300000.00"),
-        annual_rate=Decimal("3.5"),
-        term_years=30
-    )
-)
-```
-
-#### Investment Returns
-```python
-response = client.calculate_investment_returns(
-    InvestmentReturnsRequest(
-        initial_investment=Decimal("5000.00"),
-        monthly_contribution=Decimal("500.00"),
-        expected_annual_return=Decimal("7.0"),
-        years=20
-    )
-)
-```
-
-## 🔧 Configuration
-
-### Client Options
+### Compound Interest Calculation
 
 ```python
-client = XFinanceClient(
-    api_key="your-api-key",
-    api_secret="your-api-secret",
-    base_url="https://api.xfinanceutil.com",  # Optional
-    timeout=30,                               # Request timeout in seconds
-    max_retries=3                             # Maximum retry attempts
-)
-```
+from xfinance_sdk import XFinanceClient
+from xfinance_sdk.models.request import CompoundInterestRequest
+from decimal import Decimal
 
-### Environment Variables
+client = XFinanceClient(api_key="your-api-key")
 
-You can also configure the client using environment variables:
-
-```bash
-export XFINANCE_API_KEY="your-api-key"
-export XFINANCE_API_SECRET="your-api-secret"
-export XFINANCE_BASE_URL="https://api.xfinanceutil.com"
-```
-
-```python
-# Client will automatically use environment variables
-client = XFinanceClient()
-```
-
-## 🛡️ Error Handling
-
-The SDK provides detailed exception handling:
-
-```python
-from xfinance.exceptions import (
-    AuthenticationException,
-    ValidationException,
-    NetworkException,
-    RateLimitException,
-    XFinanceException
+request = CompoundInterestRequest(
+    principal=Decimal("10000"),
+    annual_rate=Decimal("0.05"),
+    years=10,
+    compounding_frequency=12
 )
 
-try:
-    response = client.calculate_compound_interest(request)
-    
-except AuthenticationException as e:
-    print(f"Authentication failed: {e}")
-    # Handle invalid API credentials
-    
-except ValidationException as e:
-    print(f"Invalid request: {e}")
-    # Handle invalid input parameters
-    
-except RateLimitException as e:
-    print(f"Rate limit exceeded: {e}")
-    # Implement retry logic with backoff
-    
-except NetworkException as e:
-    print(f"Network error: {e}")
-    # Handle connection issues
-    
-except XFinanceException as e:
-    print(f"API error: {e}")
-    # Handle other API errors
+response = client.calculate_compound_interest(request)
 ```
 
-## 🔄 Async Support
+### Loan Payment Calculation
 
-For asynchronous applications:
+```python
+from xfinance_sdk.models.request import LoanCalculationRequest
+
+request = LoanCalculationRequest(
+    loan_amount=Decimal("200000"),
+    annual_rate=Decimal("0.035"),
+    term_years=30
+)
+
+response = client.calculate_loan_payment(request)
+```
+
+### Investment Returns Calculation
+
+```python
+from xfinance_sdk.models.request import InvestmentReturnsRequest
+
+request = InvestmentReturnsRequest(
+    initial_investment=Decimal("5000"),
+    monthly_contribution=Decimal("500"),
+    expected_annual_return=Decimal("0.07"),
+    years=20
+)
+
+response = client.calculate_investment_returns(request)
+```
+
+### Async Usage
 
 ```python
 import asyncio
-from xfinance import AsyncXFinanceClient
+from xfinance_sdk import AsyncXFinanceClient
 
 async def main():
-    async with AsyncXFinanceClient("your-api-key", "your-api-secret") as client:
-        response = await client.calculate_compound_interest_async(request)
-        print(f"Async result: {response.final_amount}")
+    client = AsyncXFinanceClient(api_key="your-api-key")
+    response = await client.calculate_compound_interest(request)
+    await client.close()
 
 asyncio.run(main())
 ```
 
-## 📊 Response Models
+## 🔐 Authentication
 
-All responses are strongly typed Pydantic models:
-
-```python
-# CompoundInterestResponse
-response.final_amount          # Decimal: Final amount after interest
-response.total_interest        # Decimal: Total interest earned
-response.principal             # Decimal: Original principal
-response.annual_rate           # Decimal: Annual interest rate used
-response.years                 # int: Number of years
-response.compounding_frequency # int: Compounding frequency
-
-# LoanCalculationResponse  
-response.monthly_payment       # Decimal: Monthly payment amount
-response.total_interest        # Decimal: Total interest paid
-response.total_amount          # Decimal: Total amount paid
-response.loan_amount           # Decimal: Original loan amount
-response.annual_rate           # Decimal: Annual interest rate used
-response.term_years            # int: Loan term in years
-
-# InvestmentReturnsResponse
-response.final_value           # Decimal: Final investment value
-response.total_contributions   # Decimal: Total contributions made
-response.total_returns         # Decimal: Total returns earned
-response.initial_investment    # Decimal: Initial investment amount
-response.monthly_contribution  # Decimal: Monthly contribution amount
-response.expected_annual_return # Decimal: Expected annual return rate
-response.years                 # int: Number of years
-```
-
-## 🚀 Advanced Usage
-
-### Custom HTTP Client
+### API Key Authentication
 
 ```python
-import requests
-from xfinance import XFinanceClient
-
-# Use a custom session
-session = requests.Session()
-session.headers.update({"Custom-Header": "value"})
-
 client = XFinanceClient(
-    api_key="your-key",
-    api_secret="your-secret",
-    session=session  # Use custom session
+    api_key="your-api-key",
+    api_secret="your-api-secret"  # Optional
 )
 ```
 
-### Request Validation
+### User Authentication
 
 ```python
-from xfinance.utils.validation import validate_request
+from xfinance_sdk.models.request import LoginRequest
 
-# Manual validation
-try:
-    validate_request(your_request)
-    response = client.calculate_compound_interest(your_request)
-except ValidationException as e:
-    print(f"Validation failed: {e}")
+# Login to get JWT token
+login_request = LoginRequest(
+    email="user@example.com",
+    password="your-password"
+)
+
+login_response = client.login(login_request)
+
+# Use token for authenticated requests
+authenticated_client = XFinanceClient(api_key=login_response.token)
 ```
 
-## 📚 Examples
+## ⚠️ Error Handling
 
-Check out the [examples directory](https://github.com/martourez21/xfinance-python-sdk/tree/main/examples) for complete usage examples:
+```python
+from xfinance_sdk.exceptions import (
+    BadRequestError, UnauthorizedError, RateLimitError, ValidationError
+)
 
-- [Basic Usage](examples/basic_usage.py)
-- [Error Handling](examples/error_handling.py) 
-- [Async Operations](examples/async_usage.py)
-- [Batch Processing](examples/batch_processing.py)
+try:
+    response = client.calculate_compound_interest(request)
+except UnauthorizedError as e:
+    print(f"Authentication failed: {e.message}")
+except BadRequestError as e:
+    print(f"Invalid request: {e.message}")
+except ValidationError as e:
+    print(f"Validation errors: {e.errors}")
+except RateLimitError as e:
+    print(f"Rate limit exceeded: {e.message}")
+```
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+```bash
+export XFINANCE_API_KEY="your-api-key"
+export XFINANCE_API_SECRET="your-api-secret"
+export XFINANCE_API_URL="https://localhost:8087/api/v1"
+export XFINANCE_TIMEOUT=30
+export XFINANCE_MAX_RETRIES=3
+```
+
+### Programmatic Configuration
+
+```python
+from xfinance_sdk import XFinanceClient, Settings
+from xfinance_sdk.config.retry_config import RetryConfig
+
+# Using Settings class
+settings = Settings(
+    api_key="your-api-key",
+    timeout=45,
+    max_retries=4
+)
+
+client = XFinanceClient(settings=settings)
+
+# Custom retry configuration
+retry_config = RetryConfig(
+    max_retries=5,
+    backoff_factor=1.0,
+    status_forcelist=(429, 500, 502, 503, 504)
+)
+
+client = XFinanceClient(api_key="your-api-key", retry_config=retry_config)
+```
+
+## 📖 Documentation
+
+Full documentation is available at [https://xfinance.github.io/xfinance-python-sdk/](https://xfinance.github.io/xfinance-python-sdk/)
+
+- [Getting Started Guide](https://xfinance.github.io/xfinance-python-sdk/getting-started/)
+- [API Reference](https://xfinance.github.io/xfinance-python-sdk/api-reference/)
+- [Examples & Tutorials](https://xfinance.github.io/xfinance-python-sdk/examples/)
+- [Advanced Usage](https://xfinance.github.io/xfinance-python-sdk/advanced/)
 
 ## 🔧 Development
 
-### Setup Development Environment
+### Installation from Source
 
 ```bash
-# Clone the repository
 git clone https://github.com/martourez21/xfinance-python-sdk.git
 cd xfinance-python-sdk
-
-# Install development dependencies
-pip install -e .[dev]
-
-# Run tests
-pytest
-
-# Run linting
-black src/ tests/ examples/
-isort src/ tests/ examples/
-flake8 src/ tests/
-mypy src/
+pip install -e ".[dev]"
 ```
 
 ### Running Tests
@@ -283,24 +223,28 @@ mypy src/
 pytest
 
 # Run with coverage
-pytest --cov=xfinance --cov-report=html
+pytest --cov=xfinance_sdk --cov-report=html
 
 # Run specific test file
-pytest tests/test_client.py -v
+pytest tests/test_client.py
 ```
 
-## 📊 Performance
+### Code Quality
 
-The SDK includes built-in performance optimizations:
+```bash
+# Format code
+black xfinance_sdk tests
 
-- **Connection Pooling**: Reuses HTTP connections for better performance
-- **Request Retry**: Automatic retry for failed requests with exponential backoff
-- **Efficient Serialization**: Optimized JSON serialization/deserialization
-- **Memory Efficiency**: Minimal memory footprint with lazy loading
+# Lint code
+flake8 xfinance_sdk tests
+
+# Type checking
+mypy xfinance_sdk
+```
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](https://github.com/martourez21/xfinance-python-sdk/blob/main/CONTRIBUTING.md) for details.
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -308,50 +252,60 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+### Development Guidelines
+
+- Follow [PEP 8](https://pep8.org/) style guidelines
+- Write comprehensive tests for new features
+- Update documentation for API changes
+- Ensure all CI checks pass
+
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/martourez21/xfinance-python-sdk/blob/main/LICENSE) file for details.
 
 ## 🆘 Support
 
-- **Documentation**: [GitHub Repository](https://github.com/martourez21/xfinance-python-sdk/)
-- **Issues**: [GitHub Issues](https://github.com/martourez21/xfinance-python-sdk/issues)
-- **Email**: nestorabiawuh@gmail.com
-- **Developer**: Nestor Martourez
+- 📧 **Email**: [nestorabiawuh@gmail.com](mailto:nestorabiawuh@gmail.com)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/martourez21/xfinance-python-sdk/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/martourez21/xfinance-python-sdk/discussions)
+- 📚 **Documentation**: [Official Docs](https://xfinance.github.io/xfinance-python-sdk/)
 
-## 🔗 Links
+## 📋 Requirements
 
-- **[PyPI Package](https://pypi.org/project/xfinance-sdk/)**
-- **[GitHub Repository](https://github.com/martourez21/xfinance-python-sdk)**
-- **[Release Notes](https://github.com/martourez21/xfinance-python-sdk/releases)**
-- **[Issue Tracker](https://github.com/martourez21/xfinance-python-sdk/issues)**
+- Python 3.8+
+- requests >= 2.25.0
+- pydantic >= 1.8.0
+- typing-extensions >= 4.0.0 (for Python < 3.10)
 
----
+## 📊 Project Stats
 
-**Note**: This SDK requires valid API credentials from [X-Finance-Util](https://xfinanceutil.com). Sign up for an account to get your API keys.
+![GitHub stars](https://img.shields.io/github/stars/martourez21/xfinance-python-sdk?style=social)
+![GitHub forks](https://img.shields.io/github/forks/martourez21/xfinance-python-sdk?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/martourez21/xfinance-python-sdk?style=social)
+
+## 📝 Changelog
+
+See [CHANGELOG.md](https://github.com/martourez21/xfinance-python-sdk/blob/main/CHANGELOG.md) for a history of changes.
+
+## 🙏 Acknowledgments
+
+- Thanks to all our [contributors](https://github.com/martourez21/xfinance-python-sdk/contributors)
+- Inspired by the Python financial computing community
+- Built with ❤️ by the Nestor Martourez aka The CodedStreams
+
+## 📞 Contact
+
+For business inquiries or partnerships, please contact us at [Coded Streams](mailto:nestorabiawuh@gmail.com)
 
 ---
 
 <div align="center">
-  
-Made with ❤️ by [Nestor Martourez](mailto:nestorabiawuh@gmail.com)
 
-[![GitHub](https://img.shields.io/badge/GitHub-martourez21-blue?style=flat&logo=github)](https://github.com/martourez21)
+**[Website](https://xfinance.github.io/)** • 
+**[Documentation](https://xfinance.github.io/xfinance-python-sdk/)** • 
+**[PyPI](https://pypi.org/project/xfinance-python-sdk/)** • 
+**[GitHub](https://github.com/martourez21/xfinance-python-sdk)**
+
+Made with ❤️ by developers, for developers.
 
 </div>
-
-## 📈 Versioning
-
-This project uses [Semantic Versioning](https://semver.org/). Given a version number MAJOR.MINOR.PATCH:
-
-- **MAJOR**: Incompatible API changes
-- **MINOR**: Backward-compatible functionality additions  
-- **PATCH**: Backward-compatible bug fixes
-
-## 🔄 Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for a history of changes and releases.
-
----
-
-*This SDK is independently developed by Nestor Martourez and is officially affiliated with X-Finance-Util.*
