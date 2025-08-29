@@ -45,103 +45,12 @@ jobs:
       run: |
         echo "Skipping tests as requested"
 
-  build-docs:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-
-      - name: Install Sphinx
-        run: |
-          python -m pip install --upgrade pip
-          pip install sphinx sphinx-rtd-theme
-
-      - name: Initialize Sphinx docs
-        run: |
-          if [ ! -f "docs/conf.py" ]; then
-              sphinx-quickstart docs -q --project "xfinance Python SDK" \
-                  --author "Nestor Martourez" -v "1.0.0" --ext-autodoc --ext-viewcode --makefile --batchfile
-          fi
-
-      - name: Create basic documentation
-        run: |
-          cat > docs/index.rst << 'EOF'
-          xfinance Python SDK
-          ===================
-
-          Official Python SDK for X-Finance API financial calculations.
-
-          .. toctree::
-             :maxdepth: 2
-             :caption: Contents:
-
-             installation
-             quickstart
-             api
-
-          Installation
-          ------------
-          .. code-block:: bash
-
-             pip install xfinance-python-sdk
-
-          Quick Start
-          -----------
-          .. code-block:: python
-
-             from xfinance_sdk import XFinanceClient
-             from xfinance_sdk.models.request import CompoundInterestRequest
-             from decimal import Decimal
-
-             client = XFinanceClient(api_key="your-api-key")
-             request = CompoundInterestRequest(
-                 principal=Decimal("10000"),
-                 annual_rate=Decimal("0.05"),
-                 years=10,
-                 compounding_frequency=12
-             )
-             response = client.calculate_compound_interest(request)
-          EOF
-
-      - name: Build documentation
-        run: |
-          cd docs
-          sphinx-build -b html . _build/html
-
-      - name: Setup GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload to GitHub Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/_build/html/
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
   build-package:
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/main'
     permissions:
-      id-token: write  # Required for trusted publishing
+      id-token: write
       contents: read
 
     steps:
@@ -178,3 +87,94 @@ jobs:
       with:
         name: package-dist
         path: dist/
+
+  build-docs:
+    runs-on: ubuntu-latest
+    needs: test  # Changed from 'build' to 'test'
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install Sphinx
+      run: |
+        python -m pip install --upgrade pip
+        pip install sphinx sphinx-rtd-theme
+
+    - name: Initialize Sphinx docs
+      run: |
+        if [ ! -f "docs/conf.py" ]; then
+            sphinx-quickstart docs -q --project "xfinance Python SDK" \
+                --author "Nestor Martourez" -v "1.0.0" --ext-autodoc --ext-viewcode --makefile --batchfile
+        fi
+
+    - name: Create basic documentation
+      run: |
+        cat > docs/index.rst << 'EOF'
+        xfinance Python SDK
+        ===================
+
+        Official Python SDK for X-Finance API financial calculations.
+
+        .. toctree::
+           :maxdepth: 2
+           :caption: Contents:
+
+           installation
+           quickstart
+           api
+
+        Installation
+        ------------
+        .. code-block:: bash
+
+           pip install xfinance-python-sdk
+
+        Quick Start
+        -----------
+        .. code-block:: python
+
+           from xfinance_sdk import XFinanceClient
+           from xfinance_sdk.models.request import CompoundInterestRequest
+           from decimal import Decimal
+
+           client = XFinanceClient(api_key="your-api-key")
+           request = CompoundInterestRequest(
+               principal=Decimal("10000"),
+               annual_rate=Decimal("0.05"),
+               years=10,
+               compounding_frequency=12
+           )
+           response = client.calculate_compound_interest(request)
+        EOF
+
+    - name: Build documentation
+      run: |
+        cd docs
+        sphinx-build -b html . _build/html
+
+    - name: Setup GitHub Pages
+      uses: actions/configure-pages@v5
+
+    - name: Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: docs/_build/html/
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
