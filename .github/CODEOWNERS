@@ -1,0 +1,6 @@
+# Code owners for the Python SDK
+* @martourez21 @codedstreams
+
+# Documentation
+/docs/ @technical-writers
+.github/ @devops-team
