@@ -31,10 +31,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-org/xfinance-python-sdk"
-Documentation = "https://your-org.github.io/xfinance-python-sdk/"
-Repository = "https://github.com/your-org/xfinance-python-sdk"
-Issues = "https://github.com/your-org/xfinance-python-sdk/issues"
+Homepage = "https://github.com/martourez21/xfinance-python-sdk"
+Documentation = "https://martourez21.github.io/xfinance-python-sdk/"
+Repository = "https://github.com/martourez21/xfinance-python-sdk"
+Issues = "https://github.com/martourez21/xfinance-python-sdk/issues"
 
 [tool.setuptools]
 packages = ["xfinance"]
@@ -69,7 +69,7 @@ exclude = '''
   | \.nox
   | \.tox
   | \.venv
-  | _build
+  | \_build
   | buck-out
   | build
   | dist

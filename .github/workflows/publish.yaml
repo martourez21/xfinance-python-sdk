@@ -9,6 +9,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
+      id-token: write  # Required for trusted publishing
       contents: read
 
     steps:
@@ -24,7 +25,7 @@ jobs:
     - name: Install build tools
       run: |
         python -m pip install --upgrade pip
-        pip install build twine
+        pip install build
 
     - name: Build package
       run: |
@@ -32,26 +33,13 @@ jobs:
 
     - name: Verify package metadata
       run: |
+        pip install twine
         twine check dist/*
 
-    - name: Publish to pyfi.org
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        TWINE_REPOSITORY_URL: https://pyfi.org/legacy
-      run: |
-        echo "=== Publishing to pyfi.org ==="
-        echo "Using upload URL: $TWINE_REPOSITORY_URL"
-        echo "Token present: $(if [ -n "$TWINE_PASSWORD" ]; then echo "YES (length: ${#TWINE_PASSWORD})"; else echo "NO"; fi)"
-        
-        if [ -z "$TWINE_PASSWORD" ]; then
-          echo "❌ ERROR: PYPI_API_TOKEN secret is empty or not set!"
-          echo "Please check GitHub Repository Settings → Secrets → PYPI_API_TOKEN"
-          exit 1
-        fi
-        
-        echo "Uploading packages to pyfi.org..."
-        twine upload dist/* --verbose --non-interactive
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        verbose: true
 
     - name: Upload release assets
       uses: softprops/action-gh-release@v2
@@ -73,7 +61,7 @@ jobs:
             issue_number: context.payload.release.id,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: '✅ Python SDK published successfully to pyfi.org!'
+            body: '✅ Python SDK published successfully to PyPI!'
           })
 
     - name: Send failure notification
@@ -85,5 +73,5 @@ jobs:
             issue_number: context.payload.release.id,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: '❌ Python SDK publication to pyfi.org failed! Check the workflow logs for details.'
+            body: '❌ Python SDK publication to PyPI failed! Check the workflow logs for details.'
           })
