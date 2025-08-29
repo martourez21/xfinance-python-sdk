@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
     - name: Checkout code
@@ -35,11 +34,14 @@ jobs:
       run: |
         twine check dist/*
 
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+    # CHANGE THIS: Publish to pyfi.org instead of PyPI
+    - name: Publish to pyfi.org
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYFI_API_TOKEN }}
+        TWINE_REPOSITORY_URL: https://pyfi.org/legacy/
+      run: |
+        twine upload dist/*
 
     - name: Upload release assets
       uses: actions/upload-release-asset@v1
@@ -66,7 +68,7 @@ jobs:
             issue_number: context.payload.release.id,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: '✅ Python SDK published successfully to PyPI!'
+            body: '✅ Python SDK published successfully to pyfi.org!'
           })
 
     - name: Send failure notification
@@ -78,5 +80,5 @@ jobs:
             issue_number: context.payload.release.id,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: '❌ Python SDK publication failed! Check the workflow logs for details.'
+            body: '❌ Python SDK publication to pyfi.org failed! Check the workflow logs for details.'
           })
