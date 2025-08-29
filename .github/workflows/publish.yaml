@@ -34,14 +34,55 @@ jobs:
       run: |
         twine check dist/*
 
-    - name: Publish to pyfi.org
+    - name: Test pyfi.org connectivity
+      run: |
+        echo "=== Testing pyfi.org endpoints ==="
+        for endpoint in "/" "/legacy" "/pypi" "/simple" "/upload"; do
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" "https://pyfi.org$endpoint" || echo "000")
+          echo "https://pyfi.org$endpoint -> HTTP $status_code"
+        done
+
+    - name: Publish to pyfi.org (multiple URL attempts)
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYFI_API_TOKEN }}
-        TWINE_REPOSITORY_URL: https://pyfi.org/legacy  # NO trailing slash
       run: |
-        echo "Publishing to pyfi.org..."
-        twine upload dist/*
+        echo "=== Attempting to publish to pyfi.org ==="
+        echo "Python version: $(python --version)"
+        echo "Twine version: $(twine --version)"
+        echo "Package files in dist/:"
+        ls -la dist/
+        
+        # Try different repository URLs
+        declare -A urls=(
+          ["pyfi_root"]="https://pyfi.org/"
+          ["pyfi_legacy"]="https://pyfi.org/legacy"
+          ["pyfi_pypi"]="https://pyfi.org/pypi"
+          ["pyfi_upload"]="https://pyfi.org/upload"
+        )
+        
+        success=false
+        for url_name in "${!urls[@]}"; do
+          url="${urls[$url_name]}"
+          echo "--- Trying $url_name: $url ---"
+          if twine upload --repository-url "$url" dist/* --verbose; then
+            echo "✅ SUCCESS with $url_name: $url"
+            success=true
+            break
+          else
+            echo "❌ Failed with $url_name: $url"
+            echo "Exit code: $?"
+          fi
+        done
+        
+        if [ "$success" = false ]; then
+          echo "=== ALL UPLOAD ATTEMPTS FAILED ==="
+          echo "Please check:"
+          echo "1. Is pyfi.org accepting uploads?"
+          echo "2. Is your API token valid and has upload permissions?"
+          echo "3. Does the package need to be created manually on pyfi.org first?"
+          exit 1
+        fi
 
     - name: Upload release assets
       uses: actions/upload-release-asset@v1
