@@ -76,7 +76,7 @@ jobs:
     - name: Publish to pyfi.org
       env:
         TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYFI_API_TOKEN }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}  # FIXED: Changed to PYPI_API_TOKEN
         TWINE_REPOSITORY_URL: https://upload.pyfi.org/legacy/
       run: |
         echo "=== Publishing to pyfi.org ==="
@@ -84,8 +84,8 @@ jobs:
         echo "Token present: $(if [ -n "$TWINE_PASSWORD" ]; then echo "YES (length: ${#TWINE_PASSWORD})"; else echo "NO"; fi)"
         
         if [ -z "$TWINE_PASSWORD" ]; then
-          echo "❌ ERROR: PYFI_API_TOKEN secret is empty or not set!"
-          echo "Please check GitHub Repository Settings → Secrets → PYFI_API_TOKEN"
+          echo "❌ ERROR: PYPI_API_TOKEN secret is empty or not set!"
+          echo "Please check GitHub Repository Settings → Secrets → PYPI_API_TOKEN"
           exit 1
         fi
         
